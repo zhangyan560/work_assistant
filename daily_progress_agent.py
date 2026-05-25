@@ -28,7 +28,12 @@ def _resolve_daily_dir() -> Path:
 
 
 DAILY_PROGRESS_DIR = _resolve_daily_dir()
-DAILY_TEMPLATE_PATH = DAILY_PROGRESS_DIR / "_模板.md"
+_template_env = os.environ.get("DAILY_TEMPLATE_PATH", "").strip()
+DAILY_TEMPLATE_PATH = (
+    Path(_template_env).expanduser().resolve()
+    if _template_env
+    else Path(__file__).parent / "templates" / "daily_progress_template.md"
+)
 
 
 @dataclass
