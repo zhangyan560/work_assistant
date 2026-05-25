@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import fnmatch
+import os
 import re
 import zipfile
 import xml.etree.ElementTree as ET
@@ -19,12 +20,18 @@ from agents import RunContextWrapper
 
 from agent_provider import configure_model_provider, load_local_env
 
+load_local_env()
+
 
 def _resolve_daily_dir() -> Path:
     env = os.environ.get("DAILY_PROGRESS_DIR", "").strip()
     if env:
         return Path(env).expanduser().resolve()
-    return Path(__file__).resolve().parents[5] / "work" / "日志" / "每日进展"
+    raise SystemExit(
+        "DAILY_PROGRESS_DIR is not set.\n"
+        "Add it to your .env file, e.g.:\n"
+        "  DAILY_PROGRESS_DIR=~/work/日志/每日进展"
+    )
 
 
 DAILY_PROGRESS_DIR = _resolve_daily_dir()

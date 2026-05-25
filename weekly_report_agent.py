@@ -18,15 +18,22 @@ from agents import RunContextWrapper
 
 from agent_provider import configure_model_provider, load_local_env
 
+load_local_env()
 
-def _resolve_path(env_key: str, fallback: Path) -> Path:
+
+def _require_path(env_key: str) -> Path:
     env = os.environ.get(env_key, "").strip()
-    return Path(env).expanduser().resolve() if env else fallback
+    if not env:
+        raise SystemExit(
+            f"{env_key} is not set.\n"
+            f"Add it to your .env file, e.g.:\n"
+            f"  {env_key}=~/work/日志/{'每日进展' if 'DAILY' in env_key else '周报'}"
+        )
+    return Path(env).expanduser().resolve()
 
 
-_LOG_ROOT = Path(__file__).resolve().parents[5] / "work" / "日志"
-DAILY_PROGRESS_DIR = _resolve_path("DAILY_PROGRESS_DIR", _LOG_ROOT / "每日进展")
-WEEKLY_REPORT_DIR = _resolve_path("WEEKLY_REPORT_DIR", _LOG_ROOT / "周报")
+DAILY_PROGRESS_DIR = _require_path("DAILY_PROGRESS_DIR")
+WEEKLY_REPORT_DIR = _require_path("WEEKLY_REPORT_DIR")
 _template_env = os.environ.get("DAILY_TEMPLATE_PATH", "").strip()
 DAILY_TEMPLATE_PATH = (
     Path(_template_env).expanduser().resolve()
@@ -34,7 +41,7 @@ DAILY_TEMPLATE_PATH = (
     else Path(__file__).parent / "templates" / "daily_progress_template.md"
 )
 _ref_env = os.environ.get("REFERENCE_WEEKLY_REPORT", "").strip()
-REFERENCE_WEEKLY_REPORT = Path(_ref_env).expanduser().resolve() if _ref_env else _LOG_ROOT / "2026-05-15周报.md"
+REFERENCE_WEEKLY_REPORT = Path(_ref_env).expanduser().resolve() if _ref_env else Path(__file__).parent / "templates" / "weekly_report_reference.md"
 
 
 @dataclass
